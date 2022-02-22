@@ -1,10 +1,8 @@
-#include <jni.h>
-#include <string>
+#include <iostream>
 
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_roguelike_MainActivity_nativeGetName(
-        JNIEnv* env,
-        jobject) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
+#include "AndroidApp.h"
+
+void android_main(struct android_app* app) {
+    AndroidApp::initialize(app);
+    AndroidApp::instance()->mainLoop();
 }
