@@ -3,7 +3,7 @@
 #include <jni.h>
 #include <memory>
 #include <android/input.h>
-#include "GraphicsDevice.h"
+#include "Renderer.h"
 
 class AndroidApp {
 public:
@@ -17,7 +17,7 @@ private:
     static i32 onInputEvent(struct android_app*, AInputEvent* inputEvent);
 
     struct android_app* app;
-    GraphicsDevice renderer {};
+    Renderer renderer {};
 
     static AndroidApp* instance;
 };

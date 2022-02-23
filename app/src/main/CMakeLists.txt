@@ -17,9 +17,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SRC)
 
 #set(SRC ${SRC} cpp/Log.h)
-set(SRC ${SRC} cpp/GraphicsDevice.cpp)
+set(SRC ${SRC} cpp/mesh/Vertex.h)
+set(SRC ${SRC} cpp/Renderer.cpp)
 set(SRC ${SRC} cpp/AndroidApp.cpp)
 set(SRC ${SRC} cpp/main.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${SRC})
-target_link_libraries(${PROJECT_NAME} android appglue log EGL GLESv2)
+target_link_libraries(${PROJECT_NAME} android appglue log EGL GLESv3)

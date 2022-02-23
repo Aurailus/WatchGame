@@ -3,6 +3,8 @@
 #include "util/Util.h"
 #include "util/Ensure.h"
 #include "Log.h"
+#include "mesh/Vertex.h"
+#include "mesh/Mesh.h"
 
 AndroidApp* AndroidApp::instance {};
 
@@ -10,15 +12,16 @@ AndroidApp::AndroidApp(struct android_app* app): app(app) {
     ensure(!AndroidApp::instance, "Only one AndroidApp can exist at once.");
     AndroidApp::instance = this;
 
-    //app->onAppCmd = [&](struct android_app* app, i32 cmd) {
-    //    onAppCommand(app, cmd);
-    //};
-
-    //let fn = bind_this(this, &AndroidApp::onInputEvent);
-    //app->onAppCmd = bind_this(&AndroidApp::onAppCommand, this);
     app->onAppCmd = AndroidApp::onAppCommand;
     app->onInputEvent = AndroidApp::onInputEvent;
-   // app->onInputEvent = std::bind(&AndroidApp::onInputEvent, this, std::placeholders::_1);
+
+    typedef Vertex<vec4, u16vec2, u8> WeirdVertex;
+    WeirdVertex v {vec4(1, 1, 0, 1), u16vec2(0, 1), 1 };
+
+    Mesh<WeirdVertex> m(vec<WeirdVertex> { v }, vec<u32> { 0 });
+
+    Info("%u", sizeof(SimpleVertex));
+    Info("hi %f %u", std::get<0>(v.data).x, m.VAO);
 }
 
 AndroidApp::~AndroidApp() {

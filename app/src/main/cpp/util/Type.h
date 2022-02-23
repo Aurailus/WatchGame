@@ -51,7 +51,7 @@ constexpr const i8 I8_MAX = INT8_MAX;
 constexpr const i16 I16_MAX = INT16_MAX;
 constexpr const i32 I32_MAX = INT32_MAX;
 constexpr const i64 I64_MAX = INT64_MAX;
-constexpr const isize ISIZE_MAX = INTMAX_MAX;
+constexpr const isize ISIZE_MAX = INT32_MAX;
 
 constexpr const i8f I8F_MAX = INT_FAST8_MAX;
 constexpr const i16f I16F_MAX = INT_FAST16_MAX;
@@ -62,7 +62,7 @@ constexpr const u8 U8_MAX = UINT8_MAX;
 constexpr const u16 U16_MAX = UINT16_MAX;
 constexpr const u32 U32_MAX = UINT32_MAX;
 constexpr const u64 U64_MAX = UINT64_MAX;
-constexpr const usize USIZE_MAX = UINTMAX_MAX;
+constexpr const usize USIZE_MAX = SIZE_T_MAX;
 
 constexpr const u8f U8F_MAX = UINT_FAST8_MAX;
 constexpr const u16f U16F_MAX = UINT_FAST16_MAX;
@@ -100,7 +100,7 @@ using uvec4 = glm::u32vec4;
 
 /*
  * De-namespace common data structures,
- * vector => vec for consiseness.
+ * vector => vec for conciseness.
  */
 
 using std::array;

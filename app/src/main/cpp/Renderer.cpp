@@ -1,10 +1,10 @@
 #include <cstdlib>
-#include "GraphicsDevice.h"
+#include "Renderer.h"
 
 #include "Log.h"
 #include "util/Ensure.h"
 
-void GraphicsDevice::init(ANativeWindow* newWindow) {
+void Renderer::init(ANativeWindow* newWindow) {
     Info("initialized gfx");
     window = newWindow;
 
@@ -33,7 +33,7 @@ void GraphicsDevice::init(ANativeWindow* newWindow) {
     eglQuerySurface(display, surface, EGL_HEIGHT, &windowSize.y);
 }
 
-void GraphicsDevice::cleanup() {
+void Renderer::cleanup() {
     eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     eglDestroyContext(display, context);
     eglDestroySurface(display, surface);
@@ -44,11 +44,11 @@ void GraphicsDevice::cleanup() {
     display = EGL_NO_DISPLAY;
 }
 
-void GraphicsDevice::beginRender() {
+void Renderer::beginRender() {
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0, 0.7, 1, 1);
 }
 
-void GraphicsDevice::swapBuffer() {
+void Renderer::swapBuffer() {
     eglSwapBuffers(display, surface);
 }
