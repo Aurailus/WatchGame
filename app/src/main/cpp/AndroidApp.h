@@ -1,36 +1,23 @@
-#ifndef ANDROIDAPP_H
-#define ANDROIDAPP_H
+#pragma once
 
 #include <jni.h>
 #include <memory>
 #include <android/input.h>
 #include "GraphicsDevice.h"
 
-/**
- * @brief The application class.
- */
-class AndroidApp
-{
-private:
-    static std::unique_ptr<AndroidApp> s_instance;
-private:
-    struct android_app              *m_app;
-    std::shared_ptr<GraphicsDevice>  m_graphicsDevice;
-private:
-    explicit AndroidApp(struct android_app *app);
+class AndroidApp {
 public:
+    explicit AndroidApp(struct android_app* app);
     ~AndroidApp();
 
-    void mainLoop();
-
-    inline const std::shared_ptr<GraphicsDevice> &graphicsDevice() const { return this->m_graphicsDevice; }
-public:
-    static void initialize(struct android_app *app);
-    inline static AndroidApp *instance() { return AndroidApp::s_instance.get(); }
+    void loop();
 
 private:
-    static void onAppCommand(struct android_app *app, int32_t cmd);
-    static int32_t onInputEvent(struct android_app *app, AInputEvent *inputEvent);
-};
+    static void onAppCommand(struct android_app*, i32 cmd);
+    static i32 onInputEvent(struct android_app*, AInputEvent* inputEvent);
 
-#endif // ANDROIDAPP_H
+    struct android_app* app;
+    GraphicsDevice renderer {};
+
+    static AndroidApp* instance;
+};

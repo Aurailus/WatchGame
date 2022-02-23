@@ -1,8 +1,16 @@
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 cmake_minimum_required(VERSION 3.18.1)
+
 project(Roguelike)
 
 add_library(appglue STATIC ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 include_directories(${ANDROID_NDK}/sources/android/native_app_glue)
+
+set(BUILD_SHARED_LIBS OFF)
+#add_subdirectory(../../libs/glm)
+include_directories(../../libs/glm)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 

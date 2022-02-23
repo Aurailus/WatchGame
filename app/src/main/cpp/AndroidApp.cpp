@@ -1,93 +1,72 @@
 #include "AndroidApp.h"
 
-std::unique_ptr<AndroidApp> AndroidApp::s_instance = nullptr;
+#include "util/Util.h"
+#include "util/Ensure.h"
+#include "Log.h"
 
-AndroidApp::AndroidApp(struct android_app *app)
-        : m_app(app),
-        m_graphicsDevice(new GraphicsDevice(app->window))
-{
+AndroidApp* AndroidApp::instance {};
+
+AndroidApp::AndroidApp(struct android_app* app): app(app) {
+    ensure(!AndroidApp::instance, "Only one AndroidApp can exist at once.");
+    AndroidApp::instance = this;
+
+    //app->onAppCmd = [&](struct android_app* app, i32 cmd) {
+    //    onAppCommand(app, cmd);
+    //};
+
+    //let fn = bind_this(this, &AndroidApp::onInputEvent);
+    //app->onAppCmd = bind_this(&AndroidApp::onAppCommand, this);
+    app->onAppCmd = AndroidApp::onAppCommand;
+    app->onInputEvent = AndroidApp::onInputEvent;
+   // app->onInputEvent = std::bind(&AndroidApp::onInputEvent, this, std::placeholders::_1);
 }
 
-AndroidApp::~AndroidApp()
-{
+AndroidApp::~AndroidApp() {
+    AndroidApp::instance = nullptr;
 }
 
-void AndroidApp::initialize(struct android_app *app)
-{
-    // The following function call is required to ensure glue code isn't stripped.
-    app_dummy();
+void AndroidApp::loop() {
+    volatile bool destroyRequested = false;
+    while (!destroyRequested) {
+        i32 events = -1;
+        struct android_poll_source* source = nullptr;
 
-    AndroidApp::s_instance  = std::unique_ptr<AndroidApp>(new AndroidApp(app));
-    app->onAppCmd           = AndroidApp::onAppCommand;
-    app->onInputEvent       = AndroidApp::onInputEvent;
-}
-
-void AndroidApp::mainLoop()
-{
-    volatile bool isDestroyRequested = false;
-    while (!isDestroyRequested)
-    {
-        int events = -1;
-        struct android_poll_source *source = nullptr;
-
-        while (ALooper_pollAll(0, nullptr, &events, (void **)&source) >= 0)
-        {
-            if (source != nullptr)
-            {
-                source->process(this->m_app, source);
-            }
-
-            if (this->m_app->destroyRequested != 0)
-            {
-                isDestroyRequested = true;
-            }
+        while (ALooper_pollAll(0, nullptr, &events, (void **)&source) >= 0) {
+            if (source != nullptr) source->process(app, source);
+            if (app->destroyRequested != 0) destroyRequested = true;
         }
 
-        if (!this->m_graphicsDevice->isPrepared())
-        {
-            // Skip rendering if EGL is not initialized...
-            continue;
-        }
+        if (!renderer.isPrepared()) continue;
 
-        glClearColor(0.4f, 0.6f, 0.8f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.beginRender();
 
-        // TODO: Render
+        // Render code
 
-        this->m_graphicsDevice->swapBuffer();
+        renderer.swapBuffer();
     }
 }
 
-void AndroidApp::onAppCommand(struct android_app *app, int32_t cmd)
-{
-    auto androidApp = AndroidApp::instance();
-
-    switch (cmd)
-    {
-        case APP_CMD_INIT_WINDOW:
-            androidApp->graphicsDevice()->initialize(app->window);
-            break;
-        case APP_CMD_TERM_WINDOW:
-            androidApp->graphicsDevice()->finalize();
-            break;
+void AndroidApp::onAppCommand(struct android_app*, i32 cmd) {
+    switch (cmd) {
         default:
             break;
+        case APP_CMD_INIT_WINDOW:
+            instance->renderer.init(instance->app->window);
+            break;
+        case APP_CMD_TERM_WINDOW:
+            instance->renderer.cleanup();
+            break;
     }
 }
 
-int32_t AndroidApp::onInputEvent(struct android_app *app, AInputEvent *inputEvent)
-{
-    // auto androidApp = AndroidApp::instance();
-
-    if (AInputEvent_getType(inputEvent) == AINPUT_EVENT_TYPE_KEY &&
-        AKeyEvent_getKeyCode(inputEvent) == AKEYCODE_BACK)
-    {
-        ANativeActivity_finish(app->activity);
+i32 AndroidApp::onInputEvent(struct android_app*, AInputEvent *inputEvent) {
+    if (AInputEvent_getType(inputEvent) == AINPUT_EVENT_TYPE_KEY
+        && AKeyEvent_getKeyCode(inputEvent) == AKEYCODE_BACK) {
+        ANativeActivity_finish(instance->app->activity);
         return 1;
     }
 
-    if (AInputEvent_getType(inputEvent) == AINPUT_EVENT_TYPE_MOTION)
-    {
+    if (AInputEvent_getType(inputEvent) == AINPUT_EVENT_TYPE_MOTION) {
         // TODO: Handle touch event...
         return 1;
     }

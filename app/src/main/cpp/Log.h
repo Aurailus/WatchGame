@@ -1,6 +1,6 @@
 #include <android/log.h>
 
-#define TAG "Roguelike"
+#define TAG "Roguelike/AURI"
 
 #define Info(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define Debug(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)

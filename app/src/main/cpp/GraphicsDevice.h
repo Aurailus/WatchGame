@@ -1,34 +1,26 @@
-#ifndef GRAPHICSDEVICE_H
-#define GRAPHICSDEVICE_H
+#pragma once
 
-#include <android_native_app_glue.h>
-#include <GLES2/gl2.h>
 #include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <android_native_app_glue.h>
 
-/**
- * @brief The graphics device class.
- */
-class GraphicsDevice
-{
-private:
-    EGLDisplay m_display = EGL_NO_DISPLAY;
-    EGLSurface m_surface = EGL_NO_SURFACE;
-    EGLContext m_context = EGL_NO_CONTEXT;
-    uint32_t m_w = 0;
-    uint32_t m_h = 0;
-    ANativeWindow *m_nativeWindow;
+#include "util/Type.h"
+
+class GraphicsDevice {
 public:
-    explicit GraphicsDevice(ANativeWindow *nativeWindow);
-    virtual ~GraphicsDevice();
+    void init(ANativeWindow* newWindow);
+    void cleanup();
 
-    virtual void initialize(ANativeWindow* window);
-    void finalize();
+    inline bool isPrepared() { return window; }
 
-    bool isPrepared() const;
+    void beginRender();
     void swapBuffer();
 
-    inline const uint32_t &w() const { return this->m_w; }
-    inline const uint32_t &h() const { return this->m_h; }
-};
+private:
+    EGLDisplay display = EGL_NO_DISPLAY;
+    EGLSurface surface = EGL_NO_SURFACE;
+    EGLContext context = EGL_NO_CONTEXT;
 
-#endif // GRAPHICSDEVICE_H
+    ivec2 windowSize {};
+    ANativeWindow *window;
+};

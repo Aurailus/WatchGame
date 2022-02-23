@@ -2,78 +2,53 @@
 #include "GraphicsDevice.h"
 
 #include "Log.h"
+#include "util/Ensure.h"
 
-GraphicsDevice::GraphicsDevice(ANativeWindow *nativeWindow)
-        : m_nativeWindow(nativeWindow)
-{
+void GraphicsDevice::init(ANativeWindow* newWindow) {
+    Info("initialized gfx");
+    window = newWindow;
+
+    const i32 displayAttribList[] = { EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE };
+    const i32 contextAttribList[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
+
+    ensure(window, "Failed to initialize window.");
+
+    display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    eglInitialize(display, nullptr, nullptr);
+
+    i32 configNumber = -1;
+    i32 configAttrib = -1;
+    EGLConfig config = nullptr;
+    eglChooseConfig(display, displayAttribList, &config, 1, &configNumber);
+    eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &configAttrib);
+
+    ANativeWindow_setBuffersGeometry(window, 0, 0, configAttrib);
+
+    surface = eglCreateWindowSurface(display, config, window, nullptr);
+    context = eglCreateContext(display, config, nullptr, contextAttribList);
+
+    eglMakeCurrent(display, surface, surface, context);
+
+    eglQuerySurface(display, surface, EGL_WIDTH, &windowSize.x);
+    eglQuerySurface(display, surface, EGL_HEIGHT, &windowSize.y);
 }
 
-GraphicsDevice::~GraphicsDevice()
-{
+void GraphicsDevice::cleanup() {
+    eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglDestroyContext(display, context);
+    eglDestroySurface(display, surface);
+    eglTerminate(display);
+
+    context = EGL_NO_CONTEXT;
+    surface = EGL_NO_SURFACE;
+    display = EGL_NO_DISPLAY;
 }
 
-void GraphicsDevice::initialize(ANativeWindow* window)
-{
-    this->m_nativeWindow = window;
-    Info("[AURI] inititalizing");
-    const EGLint displayAttribList[] = { EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE };
-    const EGLint contextAttribList[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
-
-    if (!m_nativeWindow) {
-        Error("No native window");
-        exit(1);
-    }
-
-    EGLint w = -1;
-    EGLint h = -1;
-
-    EGLConfig config        = nullptr;
-    EGLint    configNumber  = -1;
-    EGLint    configAttrib  = -1;
-
-    this->m_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    eglInitialize(this->m_display, nullptr, nullptr);
-
-    eglChooseConfig(this->m_display, displayAttribList, &config, 1, &configNumber);
-    eglGetConfigAttrib(this->m_display, config, EGL_NATIVE_VISUAL_ID, &configAttrib);
-
-    ANativeWindow_setBuffersGeometry(this->m_nativeWindow, 0, 0, configAttrib);
-
-    this->m_surface = eglCreateWindowSurface(this->m_display, config, this->m_nativeWindow, nullptr);
-    this->m_context = eglCreateContext(this->m_display, config, nullptr, contextAttribList);
-
-    eglMakeCurrent(this->m_display, this->m_surface, this->m_surface, this->m_context);
-
-    eglQuerySurface(this->m_display, this->m_surface,  EGL_WIDTH, &w);
-    eglQuerySurface(this->m_display, this->m_surface, EGL_HEIGHT, &h);
-
-    this->m_w = static_cast<unsigned>(w);
-    this->m_h = static_cast<unsigned>(h);
-}
-
-void GraphicsDevice::finalize()
-{
-    eglMakeCurrent(this->m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    eglDestroyContext(this->m_display, this->m_context);
-    eglDestroySurface(this->m_display, this->m_surface);
-    eglTerminate(this->m_display);
-
-    this->m_context = EGL_NO_CONTEXT;
-    this->m_surface = EGL_NO_SURFACE;
-    this->m_display = EGL_NO_DISPLAY;
-}
-
-bool GraphicsDevice::isPrepared() const
-{
-    return (this->m_display != EGL_NO_DISPLAY &&
-            this->m_surface != EGL_NO_SURFACE);
-}
-
-void GraphicsDevice::swapBuffer()
-{
-    glClearColor(1, 0, 0, 1);
+void GraphicsDevice::beginRender() {
     glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0, 0.7, 1, 1);
+}
 
-    eglSwapBuffers(this->m_display, this->m_surface);
-
+void GraphicsDevice::swapBuffer() {
+    eglSwapBuffers(display, surface);
 }
