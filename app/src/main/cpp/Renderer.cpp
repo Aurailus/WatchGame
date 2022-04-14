@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include "Renderer.h"
 
-#include "Log.h"
+#include "util/Log.h"
 #include "util/Ensure.h"
 
 void Renderer::init(ANativeWindow* newWindow) {
@@ -46,7 +46,7 @@ void Renderer::cleanup() {
 
 void Renderer::beginRender() {
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0, 0.7, 1, 1);
+    glClearColor(0, (rand() % 100) / 100.f, 1, 1);
 }
 
 void Renderer::swapBuffer() {

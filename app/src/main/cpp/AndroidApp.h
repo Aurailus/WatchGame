@@ -3,6 +3,7 @@
 #include <jni.h>
 #include <memory>
 #include <android/input.h>
+
 #include "Renderer.h"
 
 class AndroidApp {
@@ -10,7 +11,9 @@ public:
     explicit AndroidApp(struct android_app* app);
     ~AndroidApp();
 
+    void init();
     void loop();
+    void cleanup();
 
 private:
     static void onAppCommand(struct android_app*, i32 cmd);

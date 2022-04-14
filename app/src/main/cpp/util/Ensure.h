@@ -1,3 +1,5 @@
+#pragma once
+
 class EnsureException : public std::exception {
 public:
     EnsureException(const string& message = ""): message(message) {}

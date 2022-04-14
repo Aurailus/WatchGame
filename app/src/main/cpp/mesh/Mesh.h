@@ -40,11 +40,24 @@ public:
         //Info("Adding Attribute #%i of type %i with %i components, each taking %i bytes at an offset of %i.",
         //     I, attr::gl_type, attr::components, sizeof(typename attr::primitive), O);
 
-        if constexpr (std::is_integral_v<typename attr::primitive>) {
-            glVertexAttribIPointer(I, attr::components, attr::gl_type, sizeof(V), (void *) O);
+        if constexpr (attr::mode == detail::NumberMode::Int) {
+            glVertexAttribIPointer(
+                I,
+                attr::components,
+                attr::gl_type,
+                sizeof(V),
+                (void *) O
+            );
         }
         else {
-            glVertexAttribPointer(I, attr::components, attr::gl_type, false, sizeof(V), (void *) O);
+            glVertexAttribPointer(
+                I,
+                attr::components,
+                attr::gl_type,
+                attr::mode == detail::NumberMode::FloatNormalized,
+                sizeof(V),
+                (void *) O
+            );
         }
 
         if constexpr (I + 1 < std::tuple_size<typename V::attributes_tuple>())
